@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="musicPlayerPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="301.0" prefWidth="845.0" style="-fx-background-color: #222222;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+   <children>
+      <Label fx:id="songLabel" layoutY="34.0" prefHeight="85.0" prefWidth="845.0" text="MP3 Player" textFill="#13c264">
+         <font>
+            <Font size="70.0" />
+         </font>
+      </Label>
+      <ProgressBar fx:id="songProgressBar" layoutY="119.0" prefHeight="44.0" prefWidth="845.0" progress="0.0" style="-fx-background-color: green;" />
+      <Button fx:id="playButton" layoutY="166.0" mnemonicParsing="false" onAction="#playMedia" prefHeight="67.0" prefWidth="117.0" text="PLAY">
+         <font>
+            <Font size="19.0" />
+         </font>
+      </Button>
+      <Button fx:id="pauseButton" layoutX="117.0" layoutY="166.0" mnemonicParsing="false" onAction="#pauseMedia" prefHeight="67.0" prefWidth="117.0" text="PAUSE">
+         <font>
+            <Font size="19.0" />
+         </font>
+      </Button>
+      <Button fx:id="resetButton" layoutX="234.0" layoutY="166.0" mnemonicParsing="false" onAction="#resetMedia" prefHeight="67.0" prefWidth="117.0" text="RESET">
+         <font>
+            <Font size="19.0" />
+         </font>
+      </Button>
+      <Button fx:id="backButton" layoutX="351.0" layoutY="166.0" mnemonicParsing="false" onAction="#backMedia" prefHeight="67.0" prefWidth="117.0" text="PREVIOUS">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <Button fx:id="forwardButton" layoutX="468.0" layoutY="166.0" mnemonicParsing="false" onAction="#forwardMedia" prefHeight="67.0" prefWidth="117.0" text="FORWARD">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
+      <ComboBox fx:id="speedComboBox" layoutX="585.0" layoutY="166.0" onAction="#changeSpeed" prefHeight="67.0" prefWidth="109.0" promptText="SPEED" />
+      <Slider fx:id="volumeSlider" layoutX="705.0" layoutY="192.0" value="100.0" />
+      <Slider fx:id="progressSlider" layoutY="245.0" prefHeight="16.0" prefWidth="845.0" style="-fx-background-color: #1db954; -fx-background-radius: 4px;" />
+      <Label fx:id="durationLabel" alignment="CENTER_RIGHT" layoutX="739.0" layoutY="214.0" prefHeight="19.0" prefWidth="109.0" text="0:00">
+         <textFill>
+            <LinearGradient endX="1.0" endY="1.0">
+               <stops>
+                  <Stop>
+                     <color>
+                        <Color red="0.12183235585689545" green="0.6578947305679321" blue="0.2201104611158371" />
+                     </color>
+                  </Stop>
+                  <Stop offset="1.0">
+                     <color>
+                        <Color red="1.0" green="1.0" blue="1.0" />
+                     </color>
+                  </Stop>
+               </stops>
+            </LinearGradient>
+         </textFill>
+         <font>
+            <Font size="15.0" />
+         </font>
+      </Label>
+      <ImageView fx:id="speakerIconImageView" fitHeight="31.0" fitWidth="34.0" layoutX="705.0" layoutY="208.0" pickOnBounds="true" preserveRatio="true" />
+      <MenuBar fx:id="mainMenuBar" layoutY="1.0" prefHeight="27.0" prefWidth="845.0" style="-fx-background-color: #A8DEE5;">
+        <menus>
+          <Menu fx:id="fileMenuItem" mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem fx:id="selectFolderMenuItem" mnemonicParsing="false" text="Select Folder" />
+                  <MenuItem fx:id="selectFileMenuItem" mnemonicParsing="false" text="Select file" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Exit" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <ToggleButton fx:id="repeatToggleButton" layoutX="14.0" layoutY="263.0" mnemonicParsing="false" text="Repeat" />
+      <ToggleButton fx:id="loopToggleButton" layoutX="96.0" layoutY="263.0" mnemonicParsing="false" text="Loop" />
+      <ImageView fx:id="playMediaIcon" fitHeight="19.0" fitWidth="23.0" layoutX="47.0" layoutY="212.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="pauseMediaIcon" fitHeight="19.0" fitWidth="23.0" layoutX="164.0" layoutY="214.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="resetMediaIcon" fitHeight="19.0" fitWidth="23.0" layoutX="281.0" layoutY="214.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="backMediaIcon" fitHeight="19.0" fitWidth="23.0" layoutX="398.0" layoutY="212.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="forwardMediaIcon" fitHeight="19.0" fitWidth="23.0" layoutX="515.0" layoutY="212.0" pickOnBounds="true" preserveRatio="true" />
+   </children>
+</AnchorPane>

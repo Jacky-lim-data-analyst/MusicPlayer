@@ -1,0 +1,7 @@
+Free and open-source mp3 player!
+K: Play
+Shift + K: Pause
+M: Mute / Unmute
+Shift + Left Arrow: Previous Track
+Shift + Right Arrow: Next Track
+R: Reset Current Track

@@ -1,0 +1,16 @@
+# Build directories
+/bin/
+/build/
+/out/
+/target/
+
+# VSCode settings
+.vscode/
+
+# Dependencies
+/lib/
+
+# compiled files
+*.jar
+*.war
+*.class
