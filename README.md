@@ -26,4 +26,4 @@ A lightweight, feature-rich music player built with JavaFx that provides a moder
 - Audio visualization
 
 ## License
-MIT License
+[MIT License](LICENSE)
