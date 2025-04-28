@@ -85,6 +85,7 @@
                   <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Exit" />
             </items>
           </Menu>
+            <Menu fx:id="audioEQMenu" mnemonicParsing="false" text="Audio Equalizer" />
           <Menu mnemonicParsing="false" text="Help">
             <items>
               <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" text="About" />

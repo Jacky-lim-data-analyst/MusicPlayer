@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="318.0" prefWidth="637.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.EQController.java">
+   <children>
+      <HBox fx:id="eqContainer" layoutY="31.0" prefHeight="211.0" prefWidth="645.0" spacing="50.0">
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+         <children>
+            <Slider fx:id="subBassSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="bassSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="lowMidsSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="midsSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="upperMidsSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="presenceSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="claritySlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="brightnessSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="trebleSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+            <Slider fx:id="airSlider" orientation="VERTICAL" stylesheets="@resources/style/slides_eq.css" />
+         </children>
+      </HBox>
+      <GridPane alignment="CENTER" layoutY="250.0" prefHeight="40.0" prefWidth="637.0" AnchorPane.leftAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="63.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="273.0" minWidth="0.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="0.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="57.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="10.0" prefWidth="64.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label fx:id="label31Hz" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Sub-bass" textAlignment="CENTER" />
+            <Label fx:id="label62Hz" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Bass" textAlignment="CENTER" GridPane.columnIndex="1" />
+            <Label fx:id="label125Hz" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Low-mids" textAlignment="CENTER" GridPane.columnIndex="2" />
+            <Label fx:id="label250Hz" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Mids" textAlignment="CENTER" GridPane.columnIndex="3" />
+            <Label fx:id="label500Hz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Upper-mids" textAlignment="CENTER" GridPane.columnIndex="4">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </Label>
+            <Label fx:id="label1kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Presence" textAlignment="CENTER" GridPane.columnIndex="5" />
+            <Label fx:id="label2kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Clarity" textAlignment="CENTER" GridPane.columnIndex="6" />
+            <Label fx:id="label4kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Brightness" textAlignment="CENTER" GridPane.columnIndex="7">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </Label>
+            <Label fx:id="label8kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Treble" textAlignment="CENTER" GridPane.columnIndex="8" />
+            <Label fx:id="label16kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Air" textAlignment="CENTER" GridPane.columnIndex="9" />
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>
