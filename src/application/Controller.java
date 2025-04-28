@@ -62,9 +62,9 @@ public class Controller implements Initializable{
     @FXML
     private MenuBar mainMenuBar;
     @FXML
-    private Menu fileMenuItem;
+    private Menu fileMenuItem, audioEQMenu;
     @FXML
-    private MenuItem selectFolderMenuItem, selectFileMenuItem, aboutMenuItem, exitMenuItem;
+    private MenuItem selectFolderMenuItem, selectFileMenuItem, aboutMenuItem, exitMenuItem, openEQMenuItem;
     @FXML
     private ToggleButton repeatToggleButton, loopToggleButton;
 
@@ -90,6 +90,11 @@ public class Controller implements Initializable{
 
     // scrolling timeline for song label
     private Timeline scrollTimeline;
+
+    // new fields for EQ functionality
+    private Stage eqStage;
+    private EQController eqController;
+    private boolean eqWindowOpen = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -218,6 +223,11 @@ public class Controller implements Initializable{
 
         // loop and repeat behaviors
         setupRepeatAndLoopButtons();
+
+        // setup EQ menu
+        openEQMenuItem.setOnAction(event -> {
+            openEQWindow();
+        });
     }
 
     // get songs and play
@@ -349,6 +359,44 @@ public class Controller implements Initializable{
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("Error when opening help window: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // open EQ window
+    private void openEQWindow() {
+        if (eqWindowOpen) {
+            eqStage.requestFocus();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("graphicEQ.fxml"));
+            AnchorPane eqPane = loader.load();
+
+            // get the controller
+            eqController = loader.getController();
+
+            // pass the media to the controller
+            if (mediaPlayer != null) {
+                // set media player **
+            }
+
+            eqStage = new Stage();
+            eqStage.initModality(Modality.NONE);   // non-modal so user can interact with main window
+            eqStage.setTitle("Audio Equalizer");
+            eqStage.setScene(new Scene(eqPane));
+            eqStage.setResizable(false);
+
+            // set windows closed behavior
+            eqStage.setOnHidden(e -> {
+                eqWindowOpen = false;
+            });
+
+            eqWindowOpen = true;
+            eqStage.show();
+        } catch (IOException e) {
+            System.err.println("Error loading graphicEQ.fxml: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -486,6 +534,11 @@ public class Controller implements Initializable{
 
             // reset scrolling 
             setupScrollingTitle();
+
+            // update the EQ controller with the new media player
+            if (eqWindowOpen && eqController != null) {
+                // set media player **
+            }
         });
 
         playMedia();
