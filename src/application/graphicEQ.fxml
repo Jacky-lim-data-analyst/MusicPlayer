@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -10,7 +11,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="318.0" prefWidth="637.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.EQController.java">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="318.0" prefWidth="637.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.EQController">
    <children>
       <HBox fx:id="eqContainer" layoutY="31.0" prefHeight="211.0" prefWidth="645.0" spacing="50.0">
          <padding>
@@ -66,5 +67,9 @@
             <Label fx:id="label16kHz" alignment="CENTER" prefHeight="16.0" prefWidth="66.0" rotate="-22.0" text="Air" textAlignment="CENTER" GridPane.columnIndex="9" />
          </children>
       </GridPane>
+      <Button fx:id="resetButton" layoutX="535.0" layoutY="14.0" mnemonicParsing="false" onAction="#resetEqualizer" text="Reset" />
+      <Button fx:id="bassBoostButton" layoutX="73.0" layoutY="14.0" mnemonicParsing="false" onAction="#applyBassBoost" text="Bass" />
+      <Button fx:id="vocalBoostButton" layoutX="181.0" layoutY="14.0" mnemonicParsing="false" onAction="#applyVocalBoost" text="Vocal" />
+      <Button fx:id="trebleBoostButton" layoutX="293.0" layoutY="14.0" mnemonicParsing="false" onAction="#applyTrebleBoost" text="Treble" />
    </children>
 </AnchorPane>
