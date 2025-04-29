@@ -253,6 +253,10 @@ public class Controller implements Initializable{
             durationLabel.setText("0:00 / " + totalTime);
             // Scrolling title animation
             setupScrollingTitle();
+            // set media player **
+            if (eqWindowOpen && eqController != null) {
+                eqController.setMediaPlayer(mediaPlayer);
+            }
         });
         // play
         playMedia();
@@ -537,7 +541,8 @@ public class Controller implements Initializable{
 
             // update the EQ controller with the new media player
             if (eqWindowOpen && eqController != null) {
-                // set media player **
+                // set media player
+                eqController.setMediaPlayer(mediaPlayer);
             }
         });
 
