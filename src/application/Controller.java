@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -101,8 +102,15 @@ public class Controller implements Initializable{
     private List<File> recentDirectories = new ArrayList<>();
     private static final int MAX_HISTORY = 3;
 
+    // preference keys
+    private static final String PREF_NODE_PATH = "application/musicplayer";
+    private static final String PREF_KEY_HISTORY_COUNT = "recentDirCount";
+    private static final String PREF_KEY_HISTORY_PREFIX = "recentDir";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // load history from preferences first **
+        loadHistoryFromPreferences();
 
         selectFolderMenuItem.setOnAction(event -> {
             openFolderDialog();
@@ -292,7 +300,6 @@ public class Controller implements Initializable{
             // load the files into the song playlist
             loadSongsFromDirectory();
 
-            // ** refactor **
             // if songs were found, start playing the first one
             if (!songs.isEmpty()) {
                 // add the selected directory with MP3 files to history 
@@ -367,26 +374,33 @@ public class Controller implements Initializable{
             historyMenu.getItems().add(noHistoryItem);
         } else {
             for (File dir: recentDirectories) {
-                MenuItem historyItem = new MenuItem(dir.getName());
-                historyItem.setOnAction(event -> {
-                    directory = dir;
-                    loadSongsFromDirectory();
-                    if (!songs.isEmpty()) {
-                        startPlayingFirstSong();
-                    } else {
-                        songLabel.setText("No MP3 files found");
-                        if (mediaPlayer != null) {
-                            mediaPlayer.stop();
-                            mediaPlayer.dispose();
-                            mediaPlayer = null;
+                // handle directory that is missing / modified by user
+                if (dir.exists() && dir.isDirectory()) {
+                    MenuItem historyItem = new MenuItem(dir.getName());
+                    historyItem.setOnAction(event -> {
+                        directory = dir;
+                        loadSongsFromDirectory();
+                        if (!songs.isEmpty()) {
+                            startPlayingFirstSong();
+                        } else {
+                            songLabel.setText("No MP3 files found");
+                            if (mediaPlayer != null) {
+                                mediaPlayer.stop();
+                                mediaPlayer.dispose();
+                                mediaPlayer = null;
+                            }
+                            // update UI
+                            songProgressBar.setProgress(0.0);
+                            progressSlider.setValue(0.0);
+                            durationLabel.setText("0:00 / 0:00");
                         }
-                        // update UI
-                        songProgressBar.setProgress(0.0);
-                        progressSlider.setValue(0.0);
-                        durationLabel.setText("0:00 / 0:00");
-                    }
-                });
-                historyMenu.getItems().add(historyItem);
+                    });
+                    historyMenu.getItems().add(historyItem);
+                } else {
+                    MenuItem invalidItem = new MenuItem(dir.getName() + " (not found)");
+                    invalidItem.setDisable(true);
+                    historyMenu.getItems().add(invalidItem);
+                }
             }
 
             // add separator and clear history option
@@ -394,6 +408,8 @@ public class Controller implements Initializable{
             MenuItem clearHistory = new MenuItem("Clear History");
             clearHistory.setOnAction(event -> {
                 recentDirectories.clear();
+                // -- also clear preferences **
+                clearHistoryPreferences();
                 setupHistoryMenu();
             });
             historyMenu.getItems().add(clearHistory);
@@ -412,7 +428,43 @@ public class Controller implements Initializable{
             recentDirectories = recentDirectories.subList(0, MAX_HISTORY);
         }
 
+        // ** save the updated history to preferences
+        saveHistoryToPreferences();
+
         setupHistoryMenu();
+    }
+
+    private void loadHistoryFromPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        int count = prefs.getInt(PREF_KEY_HISTORY_COUNT, 0);
+        recentDirectories.clear();  // start fresh
+
+        for (int i = 0; i < count && i < MAX_HISTORY; i++) {
+            String path = prefs.get(PREF_KEY_HISTORY_PREFIX + i, null);
+            if (path != null) {
+                File dir = new File(path);
+                recentDirectories.add(dir);
+            }
+        }
+    }
+
+    // save history
+    private void saveHistoryToPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        prefs.putInt(PREF_KEY_HISTORY_COUNT, recentDirectories.size());
+        for (int i = 0; i < recentDirectories.size(); i++) {
+            prefs.put(PREF_KEY_HISTORY_PREFIX + i, recentDirectories.get(i).getAbsolutePath());
+        }
+    }
+
+    // clear history
+    private void clearHistoryPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        prefs.putInt(PREF_KEY_HISTORY_COUNT, 0);  // set count to 0
+        // clear all history
+        for (int i = 0; i < MAX_HISTORY; i++) {
+            prefs.remove(PREF_KEY_HISTORY_PREFIX + i);
+        }
     }
 
     // handle help / about page
@@ -455,7 +507,8 @@ public class Controller implements Initializable{
 
             // pass the media to the controller
             if (mediaPlayer != null) {
-                // set media player **
+                // set media player
+                eqController.setMediaPlayer(mediaPlayer);
             }
 
             eqStage = new Stage();
