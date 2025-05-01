@@ -18,9 +18,9 @@ A lightweight, feature-rich music player built with JavaFx that provides a moder
 * [JavaFX 21.0.7](https://gluonhq.com/products/javafx/) or later
 
 ## Installation (technical users)
-1. Clone the repo
-2. Build the project with your preferred IDE
-3. Run the application
+1. Clone the repo.
+2. Build the project with your preferred IDE. You can learn how to setup JavaFX project with this [guide](https://openjfx.io/openjfx-docs/index.html).
+3. Run the application.
 
 ## Installation (non-technical users)
 1. Install Java 17 or higher. 

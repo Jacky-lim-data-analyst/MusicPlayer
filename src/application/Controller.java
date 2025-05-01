@@ -27,6 +27,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -62,7 +63,7 @@ public class Controller implements Initializable{
     @FXML
     private MenuBar mainMenuBar;
     @FXML
-    private Menu fileMenuItem, audioEQMenu;
+    private Menu fileMenuItem, audioEQMenu, historyMenu;
     @FXML
     private MenuItem selectFolderMenuItem, selectFileMenuItem, aboutMenuItem, exitMenuItem, openEQMenuItem;
     @FXML
@@ -95,6 +96,10 @@ public class Controller implements Initializable{
     private Stage eqStage;
     private EQController eqController;
     private boolean eqWindowOpen = false;
+
+    // keep track of mp3 folders history
+    private List<File> recentDirectories = new ArrayList<>();
+    private static final int MAX_HISTORY = 3;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -228,6 +233,10 @@ public class Controller implements Initializable{
         openEQMenuItem.setOnAction(event -> {
             openEQWindow();
         });
+
+        // setup history menu
+        // historyMenu = null;
+        setupHistoryMenu();
     }
 
     // get songs and play
@@ -286,6 +295,8 @@ public class Controller implements Initializable{
             // ** refactor **
             // if songs were found, start playing the first one
             if (!songs.isEmpty()) {
+                // add the selected directory with MP3 files to history 
+                addToHistory(selectedDirectory);
                 startPlayingFirstSong();
             } else {
                 // no songs found on the directory
@@ -341,6 +352,67 @@ public class Controller implements Initializable{
                 }
             }
         }
+    }
+
+    // history menu
+    private void setupHistoryMenu() {
+        // clear any existing menu items
+        historyMenu.getItems().clear();
+        
+
+        // add menu items for recent directories
+        if (recentDirectories.isEmpty()) {
+            MenuItem noHistoryItem = new MenuItem("No recent folders");
+            noHistoryItem.setDisable(true);
+            historyMenu.getItems().add(noHistoryItem);
+        } else {
+            for (File dir: recentDirectories) {
+                MenuItem historyItem = new MenuItem(dir.getName());
+                historyItem.setOnAction(event -> {
+                    directory = dir;
+                    loadSongsFromDirectory();
+                    if (!songs.isEmpty()) {
+                        startPlayingFirstSong();
+                    } else {
+                        songLabel.setText("No MP3 files found");
+                        if (mediaPlayer != null) {
+                            mediaPlayer.stop();
+                            mediaPlayer.dispose();
+                            mediaPlayer = null;
+                        }
+                        // update UI
+                        songProgressBar.setProgress(0.0);
+                        progressSlider.setValue(0.0);
+                        durationLabel.setText("0:00 / 0:00");
+                    }
+                });
+                historyMenu.getItems().add(historyItem);
+            }
+
+            // add separator and clear history option
+            historyMenu.getItems().add(new SeparatorMenuItem());
+            MenuItem clearHistory = new MenuItem("Clear History");
+            clearHistory.setOnAction(event -> {
+                recentDirectories.clear();
+                setupHistoryMenu();
+            });
+            historyMenu.getItems().add(clearHistory);
+        }
+    }
+
+    private void addToHistory(File dir) {
+        // remove the directory if it already exists in history to avoid duplicates
+        recentDirectories.removeIf(d -> d.getAbsolutePath().equals(dir.getAbsolutePath()));
+
+        // add the recent directories to the beginning of the list
+        recentDirectories.add(0, dir);
+
+        // trim the list if it exceeds the max size
+        if (recentDirectories.size() > MAX_HISTORY) {
+            recentDirectories = recentDirectories.subList(0, MAX_HISTORY);
+        }
+
+        setupHistoryMenu();
     }
 
     // handle help / about page
