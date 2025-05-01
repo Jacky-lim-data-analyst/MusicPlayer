@@ -12,6 +12,9 @@ A lightweight, feature-rich music player built with JavaFx that provides a moder
 * repeat single song or loop playlist functionality
 * Keyboard shortcuts for quick control
 * Real-time audio equalizer.
+* Playlist history
+* Visualization of audio spectrum during playback
+
 
 ## Requirements
 * [Java](https://www.oracle.com/my/java/technologies/downloads/) 17 or higher
@@ -25,15 +28,15 @@ A lightweight, feature-rich music player built with JavaFx that provides a moder
 ## Installation (non-technical users)
 1. Install Java 17 or higher. 
 2. Download JavaFX 21.0.7 or later. Make sure to unzip and store the files in your preferred directory.
-3. Download the `MusicPlayer_v1.1.0.jar` via this [link](https://drive.google.com/file/d/1ZW-ThjbuhXpPrXPiZ2cd_zHPg7AEda3k/view?usp=sharing).
+3. Download the `MusicPlayer_v1.3.0.jar` via this [link](https://drive.google.com/file/d/1H-1YOf10RfDqBu6-yifCYC4Vu4aTSRW3/view?usp=sharing).
 4. Open your command prompt and navigate to the directory where the jar file is located.
 5. Type in the following command:
 ```
-java --module-path /path/to/your/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml,javafx.media,javafx.graphics,javafx.web -jar MusicPlayer_v1.1.0.jar
+java --module-path /path/to/your/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml,javafx.media,javafx.graphics,javafx.web -jar MusicPlayer_v1.3.0.jar
 ```
 
 ## Future improvements
-- Playlist management (History)
+Open for suggestions and feedback
 
 ## License
 [MIT License](LICENSE)
