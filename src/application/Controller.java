@@ -267,15 +267,50 @@ public class Controller implements Initializable, AudioSpectrumListener{
 
         // clear the canvas and set bar color
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        gc.setFill(Color.GREEN);
+        // gc.setFill(Color.GREEN);
 
-        // draw vertical bars for each frequency band
+        // // draw vertical bars for each frequency band
+        // for (int i = 0; i < numBands; i++) {
+        //     double magnitude = magnitudes[i];
+        //     double height = (threshold - magnitude) * canvasHeight / threshold;
+        //     double x = i * barWidth;
+        //     double y = canvasHeight - height;
+        //     gc.fillRect(x, y, barWidth, height);
+        // }
+        // create a gradient effect for bars based on frequency/magnitude
         for (int i = 0; i < numBands; i++) {
             double magnitude = magnitudes[i];
-            double height = (threshold - magnitude) * canvasHeight / threshold;
+
+            // calculate normalized height
+            double normalizedHeight = (threshold - magnitude) / threshold;
+            double height = normalizedHeight * canvasHeight;
+
+            // position calculations
             double x = i * barWidth;
             double y = canvasHeight - height;
-            gc.fillRect(x, y, barWidth, height);
+
+            // create color gradient based on magnitude and position
+            // higher frequency will be greenish
+            // lower frequency will be blue
+            double hue = 240 - (180.0 * i / numBands);
+            double brightness = 0.7 + (normalizedHeight * 0.3);   // brighter for louder sound
+            double saturation = 0.8 + (normalizedHeight * 0.2);   // more saturated for louder sound
+
+            Color barColor = Color.hsb(hue, saturation, brightness);
+
+            // apply glow effect
+            if (normalizedHeight > 0.6) {
+                gc.setGlobalAlpha(0.7);
+                // glow effect
+                gc.setFill(barColor.deriveColor(0, 1, 1, 0.5));
+                gc.fillRect(x - 1, y - 2, barWidth + 2, height + 4);
+                gc.setGlobalAlpha(1.0);
+            }
+
+            gc.setFill(barColor);
+
+            // draw the bar with rounded top
+            gc.fillRoundRect(x, canvasHeight - height, barWidth - 1, height, barWidth / 2, 3);
         }
     }
 

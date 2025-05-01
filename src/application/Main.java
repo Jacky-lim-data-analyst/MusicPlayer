@@ -22,6 +22,7 @@ public class Main extends Application{
             Scene scene = new Scene(root);
             stage.setTitle("Media Player");
             stage.setScene(scene);
+            stage.setResizable(false);
             stage.show();
 
             stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
