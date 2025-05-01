@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.prefs.Preferences;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -20,6 +21,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -27,6 +30,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -35,8 +39,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.media.AudioSpectrumListener;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -44,7 +50,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class Controller implements Initializable{
+public class Controller implements Initializable, AudioSpectrumListener{
     @FXML
     private AnchorPane musicPlayerPane;
     @FXML
@@ -62,11 +68,14 @@ public class Controller implements Initializable{
     @FXML
     private MenuBar mainMenuBar;
     @FXML
-    private Menu fileMenuItem, audioEQMenu;
+    private Menu fileMenuItem, audioEQMenu, historyMenu;
     @FXML
     private MenuItem selectFolderMenuItem, selectFileMenuItem, aboutMenuItem, exitMenuItem, openEQMenuItem;
     @FXML
     private ToggleButton repeatToggleButton, loopToggleButton;
+    @FXML
+    private Canvas spectrumCanvas;
+    private GraphicsContext gc;
 
     private Media media;
     private MediaPlayer mediaPlayer;
@@ -96,8 +105,19 @@ public class Controller implements Initializable{
     private EQController eqController;
     private boolean eqWindowOpen = false;
 
+    // keep track of mp3 folders history
+    private List<File> recentDirectories = new ArrayList<>();
+    private static final int MAX_HISTORY = 3;
+
+    // preference keys
+    private static final String PREF_NODE_PATH = "application/musicplayer";
+    private static final String PREF_KEY_HISTORY_COUNT = "recentDirCount";
+    private static final String PREF_KEY_HISTORY_PREFIX = "recentDir";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // load history from preferences first **
+        loadHistoryFromPreferences();
 
         selectFolderMenuItem.setOnAction(event -> {
             openFolderDialog();
@@ -228,6 +248,43 @@ public class Controller implements Initializable{
         openEQMenuItem.setOnAction(event -> {
             openEQWindow();
         });
+
+        // setup history menu
+        // historyMenu = null;
+        setupHistoryMenu();
+
+        // Initialize GraphicsContext for spectrum drawing
+        gc = spectrumCanvas.getGraphicsContext2D();
+    }
+
+    @Override
+    public void spectrumDataUpdate(double timestamp, double duration, float[] magnitudes, float[] phases) {
+        double canvasWidth = spectrumCanvas.getWidth();
+        double canvasHeight = spectrumCanvas.getHeight();
+        int numBands = magnitudes.length;
+        double barWidth = canvasWidth / numBands;
+        double threshold = mediaPlayer.getAudioSpectrumThreshold();
+
+        // clear the canvas and set bar color
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
+        gc.setFill(Color.GREEN);
+
+        // draw vertical bars for each frequency band
+        for (int i = 0; i < numBands; i++) {
+            double magnitude = magnitudes[i];
+            double height = (threshold - magnitude) * canvasHeight / threshold;
+            double x = i * barWidth;
+            double y = canvasHeight - height;
+            gc.fillRect(x, y, barWidth, height);
+        }
+    }
+
+    private void setAudioSpectrum(MediaPlayer mediaPlayer) {
+        // configure MediaPlayer for audio spectrum
+        mediaPlayer.setAudioSpectrumListener(this);
+        mediaPlayer.setAudioSpectrumInterval(0.1);
+        mediaPlayer.setAudioSpectrumNumBands(20);
+        mediaPlayer.setAudioSpectrumThreshold(-60);
     }
 
     // get songs and play
@@ -243,6 +300,9 @@ public class Controller implements Initializable{
         // reset media player
         media = new Media(songs.get(currentSongIndex).toURI().toString());
         mediaPlayer = new MediaPlayer(media);
+
+        setAudioSpectrum(mediaPlayer);
+
         songLabel.setText(songs.get(currentSongIndex).getName());
 
         setupMediaPlayerEndOfMediaBahavior();
@@ -283,13 +343,14 @@ public class Controller implements Initializable{
             // load the files into the song playlist
             loadSongsFromDirectory();
 
-            // ** refactor **
             // if songs were found, start playing the first one
             if (!songs.isEmpty()) {
+                // add the selected directory with MP3 files to history 
+                addToHistory(selectedDirectory);
                 startPlayingFirstSong();
             } else {
                 // no songs found on the directory
-                songLabel.setText("No MP3 files found");
+                songLabel.setText("No supported audio files found");
                 if (mediaPlayer != null) {
                     mediaPlayer.stop();
                     mediaPlayer.dispose();
@@ -306,8 +367,11 @@ public class Controller implements Initializable{
     private void handleSelectFiles(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Music Files");
-        fileChooser.getExtensionFilters().add(
-            new ExtensionFilter("MP3 Files", "*.mp3")
+        fileChooser.getExtensionFilters().addAll(
+            new ExtensionFilter("Audio Files", "*.mp3", "*.wav", "*.aif", "*.aiff"),
+            new ExtensionFilter("MP3 Files", "*.mp3"),
+            new ExtensionFilter("WAV Files", "*.wav"),
+            new ExtensionFilter("AIFF Files", "*.aif", "*.aiff")
         );
 
         // get the stage from any node in the scene
@@ -336,10 +400,120 @@ public class Controller implements Initializable{
         files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
-                if (file.isFile() && file.getName().endsWith("mp3")) {
+                if (file.isFile() && 
+                    (file.getName().toLowerCase().endsWith(".mp3") || 
+                    file.getName().toLowerCase().endsWith(".wav") ||
+                    file.getName().toLowerCase().endsWith(".aif") ||
+                    file.getName().toLowerCase().endsWith(".aiff"))) {
                     songs.add(file);
                 }
             }
+        }
+    }
+
+    // history menu
+    private void setupHistoryMenu() {
+        // clear any existing menu items
+        historyMenu.getItems().clear();
+        
+
+        // add menu items for recent directories
+        if (recentDirectories.isEmpty()) {
+            MenuItem noHistoryItem = new MenuItem("No recent folders");
+            noHistoryItem.setDisable(true);
+            historyMenu.getItems().add(noHistoryItem);
+        } else {
+            for (File dir: recentDirectories) {
+                // handle directory that is missing / modified by user
+                if (dir.exists() && dir.isDirectory()) {
+                    MenuItem historyItem = new MenuItem(dir.getName());
+                    historyItem.setOnAction(event -> {
+                        directory = dir;
+                        loadSongsFromDirectory();
+                        if (!songs.isEmpty()) {
+                            startPlayingFirstSong();
+                        } else {
+                            songLabel.setText("No audio files found");
+                            if (mediaPlayer != null) {
+                                mediaPlayer.stop();
+                                mediaPlayer.dispose();
+                                mediaPlayer = null;
+                            }
+                            // update UI
+                            songProgressBar.setProgress(0.0);
+                            progressSlider.setValue(0.0);
+                            durationLabel.setText("0:00 / 0:00");
+                        }
+                    });
+                    historyMenu.getItems().add(historyItem);
+                } else {
+                    MenuItem invalidItem = new MenuItem(dir.getName() + " (not found)");
+                    invalidItem.setDisable(true);
+                    historyMenu.getItems().add(invalidItem);
+                }
+            }
+
+            // add separator and clear history option
+            historyMenu.getItems().add(new SeparatorMenuItem());
+            MenuItem clearHistory = new MenuItem("Clear History");
+            clearHistory.setOnAction(event -> {
+                recentDirectories.clear();
+                // -- also clear preferences **
+                clearHistoryPreferences();
+                setupHistoryMenu();
+            });
+            historyMenu.getItems().add(clearHistory);
+        }
+    }
+
+    private void addToHistory(File dir) {
+        // remove the directory if it already exists in history to avoid duplicates
+        recentDirectories.removeIf(d -> d.getAbsolutePath().equals(dir.getAbsolutePath()));
+
+        // add the recent directories to the beginning of the list
+        recentDirectories.add(0, dir);
+
+        // trim the list if it exceeds the max size
+        if (recentDirectories.size() > MAX_HISTORY) {
+            recentDirectories = recentDirectories.subList(0, MAX_HISTORY);
+        }
+
+        // ** save the updated history to preferences
+        saveHistoryToPreferences();
+
+        setupHistoryMenu();
+    }
+
+    private void loadHistoryFromPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        int count = prefs.getInt(PREF_KEY_HISTORY_COUNT, 0);
+        recentDirectories.clear();  // start fresh
+
+        for (int i = 0; i < count && i < MAX_HISTORY; i++) {
+            String path = prefs.get(PREF_KEY_HISTORY_PREFIX + i, null);
+            if (path != null) {
+                File dir = new File(path);
+                recentDirectories.add(dir);
+            }
+        }
+    }
+
+    // save history
+    private void saveHistoryToPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        prefs.putInt(PREF_KEY_HISTORY_COUNT, recentDirectories.size());
+        for (int i = 0; i < recentDirectories.size(); i++) {
+            prefs.put(PREF_KEY_HISTORY_PREFIX + i, recentDirectories.get(i).getAbsolutePath());
+        }
+    }
+
+    // clear history
+    private void clearHistoryPreferences() {
+        Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
+        prefs.putInt(PREF_KEY_HISTORY_COUNT, 0);  // set count to 0
+        // clear all history
+        for (int i = 0; i < MAX_HISTORY; i++) {
+            prefs.remove(PREF_KEY_HISTORY_PREFIX + i);
         }
     }
 
@@ -383,7 +557,8 @@ public class Controller implements Initializable{
 
             // pass the media to the controller
             if (mediaPlayer != null) {
-                // set media player **
+                // set media player
+                eqController.setMediaPlayer(mediaPlayer);
             }
 
             eqStage = new Stage();
@@ -455,7 +630,7 @@ public class Controller implements Initializable{
 
             // move to the left so the end of the text aligns with the right edge
             // use max width to ensure scrolling even for short titles
-            double distance = Math.max(labelWidth, paneWidth) - paneWidth + 80;
+            double distance = Math.max(labelWidth, paneWidth) - paneWidth + 30;
             KeyValue kv2 = new KeyValue(songLabel.translateXProperty(), distance);
             KeyFrame kf2 = new KeyFrame(Duration.seconds(5), kv2);
 
@@ -524,6 +699,9 @@ public class Controller implements Initializable{
 
         media = new Media(songs.get(currentSongIndex).toURI().toString());
         mediaPlayer = new MediaPlayer(media);
+        
+        setAudioSpectrum(mediaPlayer);
+
         songLabel.setText(songs.get(currentSongIndex).getName());
 
         // add this line to ensure repeat and loop behavior

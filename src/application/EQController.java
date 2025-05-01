@@ -152,15 +152,15 @@ public class EQController implements Initializable {
         // Note: The slider listeners will automatically update the MediaPlayer's bands
         // if the equalizer is enabled and available. Explicitly setting gain here
         // would be redundant if listeners are working properly. we keep the check just in case
-        if (mediaPlayer != null) {
-            AudioEqualizer audioEQ = mediaPlayer.getAudioEqualizer();
-            if (audioEQ != null && audioEQ.isEnabled()) {
-                int numBands = Math.min(frequencySliders.length, audioEQ.getBands().size());
-                for (int i = 0; i < numBands; i++) {
-                    audioEQ.getBands().get(i).setGain(0.0);
-                }
-            }
-        }
+        // if (mediaPlayer != null) {
+        //     AudioEqualizer audioEQ = mediaPlayer.getAudioEqualizer();
+        //     if (audioEQ != null && audioEQ.isEnabled()) {
+        //         int numBands = Math.min(frequencySliders.length, audioEQ.getBands().size());
+        //         for (int i = 0; i < numBands; i++) {
+        //             audioEQ.getBands().get(i).setGain(0.0);
+        //         }
+        //     }
+        // }
     }
 
     @FXML

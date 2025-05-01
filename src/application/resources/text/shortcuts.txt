@@ -1,4 +1,5 @@
-Free and open-source mp3 player!
+Free and open-source audio files player! 
+Supports .mp3, .aif, .aiff and .wav file formats
 K: Play
 Shift + K: Pause
 M: Mute / Unmute
