@@ -11,6 +11,7 @@ A lightweight, feature-rich music player built with JavaFx that provides a moder
 * scrolling song title display
 * repeat single song or loop playlist functionality
 * Keyboard shortcuts for quick control
+* Audio equalizer.
 
 ## Requirements
 * [Java](https://www.oracle.com/my/java/technologies/downloads/) 17 or higher
