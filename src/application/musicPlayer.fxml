@@ -69,7 +69,7 @@
       </Button>
       <ComboBox fx:id="speedComboBox" layoutX="585.0" layoutY="166.0" onAction="#changeSpeed" prefHeight="67.0" prefWidth="109.0" promptText="SPEED" />
       <Slider fx:id="volumeSlider" layoutX="705.0" layoutY="192.0" value="100.0" />
-      <Slider fx:id="progressSlider" layoutY="245.0" prefHeight="16.0" prefWidth="845.0" style="-fx-background-color: #1db954; -fx-background-radius: 4px;" />
+      <Slider fx:id="progressSlider" layoutY="245.0" prefHeight="16.0" prefWidth="845.0" style="-fx-background-radius: 4px;" />
       <Label fx:id="durationLabel" alignment="CENTER_RIGHT" layoutX="739.0" layoutY="214.0" prefHeight="19.0" prefWidth="109.0" text="0:00">
          <textFill>
             <LinearGradient endX="1.0" endY="1.0">
