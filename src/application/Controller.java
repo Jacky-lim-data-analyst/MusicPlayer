@@ -90,6 +90,11 @@ public class Controller implements Initializable, AudioSpectrumListener{
     private Timer timer;
     private TimerTask timerTask;
 
+    // for keyboard actions
+    private long lastLeftKeyPressTime = 0;
+    private long lastRightKeyPressTime = 0;
+    private static final long DOUBLE_PRESS_THRESHOLD = 500;  // 500 miliseconds
+
     // speeds selection
     private int[] speeds = {25, 50, 75, 100, 125, 150, 175, 200};
 
@@ -114,6 +119,19 @@ public class Controller implements Initializable, AudioSpectrumListener{
     private static final String PREF_KEY_HISTORY_COUNT = "recentDirCount";
     private static final String PREF_KEY_HISTORY_PREFIX = "recentDir";
 
+    // define color themes (using CSS color strings for setStyle)
+    private final String defaultAccent = "#84e89f";
+    private final String defaultTextFill = "white";  // default text color
+
+    private final String forestAccent = "#228B22";   // forest green accent
+    private final String forestTextFill = "palegreen";
+
+    private final String oceanAccent = "#1E90FF";   // ocean blue accent
+    private final String oceanTextFill = "paleturquoise";  
+
+    private final String sunsetAccent = "#FF8C00";   // orange accent
+    private final String sunsetTextFill = "lightsalmon"; 
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // load history from preferences first **
@@ -124,6 +142,10 @@ public class Controller implements Initializable, AudioSpectrumListener{
         });
 
         selectFileMenuItem.setOnAction(this::handleSelectFiles);
+
+        // theme menu before setting styles **
+        setupThemeMenu();
+        applyTheme(defaultAccent, defaultTextFill);
 
         // initialize the speeds combo box selection
         for (int i = 0; i < speeds.length; i++) {
@@ -320,6 +342,73 @@ public class Controller implements Initializable, AudioSpectrumListener{
         mediaPlayer.setAudioSpectrumInterval(0.1);
         mediaPlayer.setAudioSpectrumNumBands(20);
         mediaPlayer.setAudioSpectrumThreshold(-60);
+    }
+
+    private void setupThemeMenu() {
+        Menu themeMenu = new Menu("Themes");   // create the main "Themes" menu
+
+        // create MenuItem for the Default theme
+        MenuItem defaultThemeItem = new MenuItem("Default");
+        defaultThemeItem.setOnAction(event -> applyTheme(defaultAccent, defaultTextFill));
+
+        // create menuItem for the forest green theme
+        MenuItem forestThemeItem = new MenuItem("Forest Green");
+        forestThemeItem.setOnAction(event -> applyTheme(forestAccent, forestTextFill));
+
+        // create menuItem for the ocean blue theme
+        MenuItem oceanThemeItem = new MenuItem("Ocean Blue");
+        oceanThemeItem.setOnAction(event -> applyTheme(oceanAccent, oceanTextFill));
+
+        // create menuItem for the sunset orange theme
+        MenuItem sunsetThemeItem = new MenuItem("Sunset Orange");
+        sunsetThemeItem.setOnAction(event -> applyTheme(sunsetAccent, sunsetTextFill));
+
+        // add all theme menuItems to the Themes Menu
+        themeMenu.getItems().addAll(defaultThemeItem, forestThemeItem, oceanThemeItem, sunsetThemeItem);
+
+        // add the Themes menu to the main menu bar
+        if (mainMenuBar != null) {
+            int historyMenuIndex = -1;
+            for (int i = 0; i < mainMenuBar.getMenus().size(); i++) {
+                if (mainMenuBar.getMenus().get(i).getText().equals("History")) {
+                    historyMenuIndex = i;
+                    break;
+                }
+            }
+            if (historyMenuIndex != -1) {
+                // insert before history menu
+                mainMenuBar.getMenus().add(historyMenuIndex, themeMenu);
+            } else {
+                mainMenuBar.getMenus().add(themeMenu);
+            }
+        } else {
+            System.err.println("Error: main menu bar not found for theme menu");
+        }
+    }
+
+    private void applyTheme(String accentColor, String textFillColor) {
+        // apply text color to the song Label
+        if (songLabel != null) {
+            // use setStyle to the song label
+            songLabel.setStyle("-fx-text-fill: " + textFillColor + ";");
+        } else {
+            System.err.println("Warning: songLabel is null during theme apply");
+        }
+
+        // apply accent color to progress bar
+        if (songProgressBar != null) {
+            songProgressBar.setStyle("-fx-accent: " + accentColor + ";");
+        } else {
+            System.err.println("Warning: songProgressbar is null during theme apply");
+        }
+
+        // apply accent color to progress slider
+        if (progressSlider != null) {
+            progressSlider.setStyle("-fx-background-color: " + accentColor + ";");
+            progressSlider.setStyle("-fx-background-radius: 4px");
+        } else {
+            System.err.println("Warning: progressSlider is null during theme apply");
+        }
     }
 
     // get songs and play
@@ -966,6 +1055,44 @@ public class Controller implements Initializable, AudioSpectrumListener{
         });
     }
 
+    // skip forward or backward
+    private void skipForwardBackward(int seconds, boolean isForward) {
+        if (mediaPlayer != null) {
+            Duration currentTime = mediaPlayer.getCurrentTime();
+            Duration totalDuration = mediaPlayer.getTotalDuration();
+
+            Duration newPosition;
+            if (isForward) {
+                newPosition = currentTime.add(Duration.seconds(seconds));
+                if (newPosition.compareTo(totalDuration) > 0) {
+                    newPosition = totalDuration;
+                }
+            } else {
+                newPosition = currentTime.subtract(Duration.seconds(seconds));
+                if (newPosition.toMillis() < 0) {
+                    newPosition = Duration.ZERO;
+                }
+            }
+
+            // seek to new position
+            mediaPlayer.seek(newPosition);
+
+            // update UI to reflect new position
+            double currentSeconds = newPosition.toSeconds();
+            double totalSeconds = totalDuration.toSeconds();
+            double percentage = currentSeconds / totalSeconds;
+
+            // update progress indicators
+            songProgressBar.setProgress(percentage);
+            progressSlider.setValue(percentage * 100);
+
+            // update the duration label
+            String currentTimeStr = formatTime(currentSeconds);
+            String totalTimeStr = formatTime(totalSeconds);
+            durationLabel.setText(currentTimeStr + " / " + totalTimeStr);
+        }
+    }
+
     // setup keyboard press events
     private void setupKeyboardShortcuts() {
         musicPlayerPane.sceneProperty().addListener((observable, oldScene, newScene) -> {
@@ -993,12 +1120,43 @@ public class Controller implements Initializable, AudioSpectrumListener{
                     } else if (event.getCode() == KeyCode.M) {
                         toggleMute();
                         event.consume();
-                    } else if (event.getCode() == KeyCode.LEFT && event.isShiftDown()) {
-                        backMedia();
-                        event.consume();
-                    } else if (event.getCode() == KeyCode.RIGHT && event.isShiftDown()) {
-                        forwardMedia();
-                        event.consume();
+                    } else if (event.getCode() == KeyCode.LEFT) {
+                        // check for double press (LEFT ARROW)
+                        long currentTime = System.currentTimeMillis();
+
+                        // double press time within threshold
+                        if (currentTime - lastLeftKeyPressTime <= DOUBLE_PRESS_THRESHOLD) {
+                            // SKIP BACKWARD 5 s **
+                            skipForwardBackward(5, false);
+                            lastLeftKeyPressTime = 0;
+                            event.consume();
+                        } else {
+                            // not a double press or first press
+                            // update the last left key press time
+                            lastLeftKeyPressTime = currentTime;
+                            if (event.isShiftDown()) {
+                                backMedia();
+                                event.consume();
+                            }
+                        }
+                        // reset other key press time
+                        lastRightKeyPressTime = 0;
+                    } else if (event.getCode() == KeyCode.RIGHT) {
+                        // check for double press (RIGHT ARROW)
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - lastRightKeyPressTime <= DOUBLE_PRESS_THRESHOLD) {
+                            // skip 5 s **
+                            lastRightKeyPressTime = 0;
+                            skipForwardBackward(5, true);
+                            event.consume();
+                        } else {
+                            lastRightKeyPressTime = currentTime;
+                            if (event.isShiftDown()) {
+                                forwardMedia();
+                                event.consume();
+                            }
+                        }
+                        lastLeftKeyPressTime = 0;
                     } else if (event.getCode() == KeyCode.R) {
                         resetMedia();
                         playMedia();

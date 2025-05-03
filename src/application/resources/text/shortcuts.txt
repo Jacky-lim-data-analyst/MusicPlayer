@@ -6,3 +6,5 @@ M: Mute / Unmute
 Shift + Left Arrow: Previous Track
 Shift + Right Arrow: Next Track
 R: Reset Current Track
+Double Right Arrow: Skip forward 5s
+Double Left Arrow: Skip backward 5s
