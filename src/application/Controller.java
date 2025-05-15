@@ -136,14 +136,14 @@ public class Controller implements Initializable, AudioSpectrumListener{
     public void initialize(URL location, ResourceBundle resources) {
         // load history from preferences first **
         loadHistoryFromPreferences();
-
+        // setup click event for open folder
         selectFolderMenuItem.setOnAction(event -> {
             openFolderDialog();
         });
-
+        // setup click event for open file
         selectFileMenuItem.setOnAction(this::handleSelectFiles);
 
-        // theme menu before setting styles **
+        // theme menu before setting styles
         setupThemeMenu();
         applyTheme(defaultAccent, defaultTextFill);
 
@@ -195,7 +195,7 @@ public class Controller implements Initializable, AudioSpectrumListener{
             volumeTooltip.setText(volumeValue + "%");
         });
 
-        // update tooltip text when the mouse hovers over the slider
+        // update the volume tooltip when there is changes in slider values
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             int volumeValue = newValue.intValue();
             volumeTooltip.setText(volumeValue + "%");
@@ -203,7 +203,7 @@ public class Controller implements Initializable, AudioSpectrumListener{
 
         // set progress bar property
         songProgressBar.setStyle("-fx-accent: #84e89f");
-        // setup pro
+        // setup progress slider mouse click event handler
         setupProgressSliderClickHandler();
 
         // prevents the slider from updating the song position while a song is playing
@@ -233,7 +233,7 @@ public class Controller implements Initializable, AudioSpectrumListener{
                 mediaPlayer.seek(Duration.seconds(seekTime));
             }
         });
-
+        // play audio when mouse released
         progressSlider.setOnMouseReleased(event -> {
             // playMediaAtTheTime();
             if (mediaPlayer != null && isPlaying) {
@@ -279,6 +279,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         gc = spectrumCanvas.getGraphicsContext2D();
     }
 
+    /**
+     * Overrides spectrumDataUpdate
+     */
     @Override
     public void spectrumDataUpdate(double timestamp, double duration, float[] magnitudes, float[] phases) {
         double canvasWidth = spectrumCanvas.getWidth();
@@ -289,16 +292,7 @@ public class Controller implements Initializable, AudioSpectrumListener{
 
         // clear the canvas and set bar color
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        // gc.setFill(Color.GREEN);
 
-        // // draw vertical bars for each frequency band
-        // for (int i = 0; i < numBands; i++) {
-        //     double magnitude = magnitudes[i];
-        //     double height = (threshold - magnitude) * canvasHeight / threshold;
-        //     double x = i * barWidth;
-        //     double y = canvasHeight - height;
-        //     gc.fillRect(x, y, barWidth, height);
-        // }
         // create a gradient effect for bars based on frequency/magnitude
         for (int i = 0; i < numBands; i++) {
             double magnitude = magnitudes[i];
@@ -336,14 +330,20 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    private void setAudioSpectrum(MediaPlayer mediaPlayer) {
-        // configure MediaPlayer for audio spectrum
+    /**
+     * configure MediaPlayer for audio spectrum
+     * @param mediaPlayer instance of MediaPlayer instance
+     */
+    private void setAudioSpectrum(MediaPlayer mediaPlayer) { 
         mediaPlayer.setAudioSpectrumListener(this);
         mediaPlayer.setAudioSpectrumInterval(0.1);
         mediaPlayer.setAudioSpectrumNumBands(20);
         mediaPlayer.setAudioSpectrumThreshold(-60);
     }
 
+    /**
+     * Click event handlers for the color theme menu items
+     */
     private void setupThemeMenu() {
         Menu themeMenu = new Menu("Themes");   // create the main "Themes" menu
 
@@ -386,6 +386,11 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Apply color theme to specific UI elements
+     * @param accentColor accent color (hex code)
+     * @param textFillColor text fill color (hex code)
+     */
     private void applyTheme(String accentColor, String textFillColor) {
         // apply text color to the song Label
         if (songLabel != null) {
@@ -411,7 +416,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // get songs and play
+    /**
+     * Starts playing first song
+     */
     private void startPlayingFirstSong() {
         // stop and dispose of media player
         if (mediaPlayer != null) {
@@ -446,7 +453,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         playMedia();
     } 
 
-    // handle folder selection
+    /**
+     * Handles circumstance where user select folder
+     */
     public void openFolderDialog() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select music folder");
@@ -487,6 +496,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Handles circumstance where user select files (mp3, wav, aif and aiff)
+     */
     @FXML
     private void handleSelectFiles(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -520,6 +532,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Load files into a list
+     */
     private void loadSongsFromDirectory() {
         files = directory.listFiles();
         if (files != null) {
@@ -535,7 +550,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // history menu
+    /**
+     * Setup History menu for folder selected by user
+     */
     private void setupHistoryMenu() {
         // clear any existing menu items
         historyMenu.getItems().clear();
@@ -590,6 +607,10 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Add directory to history
+     * @param dir java.io.File
+     */
     private void addToHistory(File dir) {
         // remove the directory if it already exists in history to avoid duplicates
         recentDirectories.removeIf(d -> d.getAbsolutePath().equals(dir.getAbsolutePath()));
@@ -608,6 +629,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         setupHistoryMenu();
     }
 
+    /**
+     * Load folders selected before from cache
+     */
     private void loadHistoryFromPreferences() {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
         int count = prefs.getInt(PREF_KEY_HISTORY_COUNT, 0);
@@ -622,7 +646,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // save history
+    /**
+     * Save folders in the preference cache
+     */
     private void saveHistoryToPreferences() {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
         prefs.putInt(PREF_KEY_HISTORY_COUNT, recentDirectories.size());
@@ -631,7 +657,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // clear history
+    /**
+     * Clear folders from history
+     */
     private void clearHistoryPreferences() {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE_PATH);
         prefs.putInt(PREF_KEY_HISTORY_COUNT, 0);  // set count to 0
@@ -641,7 +669,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // handle help / about page
+    /**
+     * Handles events to open new help window
+     */
     @FXML
     private void handleOpenHelpWindow() {
         try {
@@ -665,7 +695,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
-    // open EQ window
+    /**
+     * Opens audio equalization window
+     */
     private void openEQWindow() {
         if (eqWindowOpen) {
             eqStage.requestFocus();
@@ -704,11 +736,13 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Insert icons on the main window
+     * @param iconPath Icon filename
+     * @param appImageView The corresponding ImageView instance
+     */
     private void insertIcon(String iconPath, ImageView appImageView) {
         try {
-            // URL resourceUrl = getClass().getResource("../resources/images/");
-            // System.out.println("Resource URL: " + resourceUrl);
-
             Image image = new Image(getClass().getResourceAsStream("/application/resources/images/" + iconPath));
             appImageView.setImage(image);
 
@@ -731,6 +765,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Animate Media label
+     */
     private void setupScrollingTitle() {
         // stop any existing animation
         if (scrollTimeline != null) {
@@ -774,12 +811,20 @@ public class Controller implements Initializable, AudioSpectrumListener{
         });
     }
 
+    /**
+     * Utility to format the time
+     * @param seconds time in seconds (double)
+     * @return Properly formatted time mm:ss (string)
+     */
     private String formatTime(double seconds) {
         int minutes = (int) (seconds / 60);
         int remainingSeconds = (int) (seconds % 60);
         return String.format("%d:%02d", minutes, remainingSeconds);
     }
 
+    /**
+     * Begin timer, update to the latest playback speed, set to current volume, play media
+     */
     public void playMedia() {
         beginTimer();
         changeSpeed(null);
@@ -792,11 +837,17 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Stop the timer, pause the media
+     */
     public void pauseMedia() {
         cancelTimer();
         mediaPlayer.pause();
     }
 
+    /**
+     * Starts the media from very beginning, update progress bar & slider, label, reset timer and title scrolling
+     */
     public void resetMedia() {
         mediaPlayer.stop();
         mediaPlayer.seek(Duration.millis(0.0));
@@ -813,6 +864,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         setupScrollingTitle();
     }
 
+    /**
+     * Update mediaPlayer when prev or forward is triggered by user
+     */
     private void updateMediaPlayer() {
         mediaPlayer.stop();
         mediaPlayer.dispose();
@@ -851,6 +905,8 @@ public class Controller implements Initializable, AudioSpectrumListener{
         playMedia();
     }
 
+    /**
+     * Move back to previous media */     
     public void backMedia() {
         if (currentSongIndex > 0) {
             currentSongIndex--;
@@ -860,6 +916,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         updateMediaPlayer();
     }
 
+    /**
+     * Move to the next media
+     */
     public void forwardMedia() {
         if (currentSongIndex < songs.size() - 1) {
             currentSongIndex++;
@@ -869,6 +928,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         updateMediaPlayer();
     }
 
+    /**
+     * Play media when user change the playback timestamp
+     */
     public void playMediaAtTheTime() {
         if (mediaPlayer != null) {
             double sliderValue = progressSlider.getValue() / 100.0;
@@ -886,6 +948,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Toggle mute
+     */
     public void toggleMute() {
         if (mediaPlayer != null) {
             isMuted = !isMuted;
@@ -903,6 +968,10 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Event listener for media speed change
+     * @param event change in media playback speed
+     */
     public void changeSpeed(ActionEvent event) {
         // to handle potential null from speedcombo box
         if (speedComboBox.getValue() == null) {
@@ -913,6 +982,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }
     }
 
+    /**
+     * Begin timer
+     */
     public void beginTimer() {
         timer = new Timer();
 
@@ -946,6 +1018,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         timer.scheduleAtFixedRate(timerTask, 0, 1000);
     }
 
+    /**
+     * Cancel timer
+     */
     public void cancelTimer() {
         isPlaying = false;
         timer.cancel();
@@ -953,10 +1028,6 @@ public class Controller implements Initializable, AudioSpectrumListener{
 
     // setup repeat and loop buttons
     private void setupRepeatAndLoopButtons() {
-        // setup initial button states
-        // repeatToggleButton.setStyle("-fx-background-color: #d3d3d3;");
-        // loopToggleButton.setStyle("-fx-background-color: #d3d3d3;");
-
         // set tooltip texts
         repeatToggleButton.setTooltip(new Tooltip("Repeat current song"));
         loopToggleButton.setTooltip(new Tooltip("Loop playlist"));
@@ -1000,6 +1071,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         }});
     }
 
+    /**
+     * Setup the progress slider to listen to mouse click event on the slider
+     */
     private void setupProgressSliderClickHandler() {
         songProgressBar.setOnMouseClicked(event -> {
             if (mediaPlayer != null) {
@@ -1034,6 +1108,9 @@ public class Controller implements Initializable, AudioSpectrumListener{
         });
     }
 
+    /**
+     * End of media behaviors
+     */
     private void setupMediaPlayerEndOfMediaBahavior() {
         mediaPlayer.setOnEndOfMedia(() -> {
             if (isRepatEnabled) {
@@ -1055,7 +1132,7 @@ public class Controller implements Initializable, AudioSpectrumListener{
         });
     }
 
-    // skip forward or backward
+    // skip forward or backward by certain amount of time
     private void skipForwardBackward(int seconds, boolean isForward) {
         if (mediaPlayer != null) {
             Duration currentTime = mediaPlayer.getCurrentTime();
